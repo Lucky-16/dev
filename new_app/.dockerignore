@@ -1,0 +1,13 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+.git
+*.log
+Dockerfile.*
+docker-compose.*
+nginx.conf
+data/
+.nyc_output
+coverage/
+.env*
+
