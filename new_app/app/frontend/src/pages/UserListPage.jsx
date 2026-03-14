@@ -1,15 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import UserList from '../components/UserList.jsx'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useDebounce from '../hooks/useDebounce.js'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 function UserListPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const page = parseInt(searchParams.get('page')) || 1;
+  const limit = 50;
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Removed URL update useEffect to prevent cursor loss
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', page, debouncedSearch],
     queryFn: async () => {
-      const response = await axios.get(`${API_BASE}/users`)
+      const params = new URLSearchParams({ page, limit });
+      if (debouncedSearch) params.append('search', debouncedSearch);
+      const response = await axios.get(`${API_BASE}/users?${params}`)
       return response.data
     },
   })
@@ -40,9 +54,14 @@ function UserListPage() {
           <p className="text-emerald-600 font-semibold">Manage your team ({data?.pagination?.total || 0} active)</p>
         </div>
         <div className="md:col-span-2 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <input type="text" placeholder="Search users..." className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-200 focus:border-emerald-400 transition-all shadow-inner text-lg" />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <div className="flex-1">
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm shadow-sm" 
+            />
           </div>
         </div>
       </div>

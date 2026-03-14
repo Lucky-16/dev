@@ -7,29 +7,39 @@ const router = express.Router();
 // GET /api/users - List users
 router.get('/', async (req, res, next) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const offset = (page - 1) * limit;
 
-    db.all(
-      'SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?',
-      [limit, offset],
-      (err, rows) => {
+    let query = 'SELECT * FROM users WHERE 1=1';
+    let countQuery = 'SELECT COUNT(*) as count FROM users WHERE 1=1';
+    let params = [];
+
+    if (search) {
+      query += ' AND (name LIKE ? OR email LIKE ?)';
+      countQuery += ' AND (name LIKE ? OR email LIKE ?)';
+      const s = `%${search}%`;
+      params = [s, s];
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+
+    db.all(query, params, (err, rows) => {
+      if (err) return next(err);
+      
+      db.get(countQuery, params.slice(0, params.length - 2), (err, count) => {
         if (err) return next(err);
-        
-        db.get('SELECT COUNT(*) as count FROM users', (err, count) => {
-          if (err) return next(err);
-          res.json({
-            data: rows,
-            pagination: {
-              page: parseInt(page),
-              limit: parseInt(limit),
-              total: count.count,
-              pages: Math.ceil(count.count / limit)
-            }
-          });
+        res.json({
+          data: rows,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: count.count,
+            pages: Math.ceil(count.count / parseInt(limit))
+          }
         });
-      }
-    );
+      });
+    });
   } catch (error) {
     next(error);
   }
@@ -113,7 +123,13 @@ router.put('/:id',
     values.push(id);
 
     if (updates.length === 0) {
-      return res.status(400).json({ error: 'No fields to update' });
+      // Allow no changes - refetch current user
+      db.get('SELECT * FROM users WHERE id = ?', [id], (err, row) => {
+        if (err) return next(err);
+        if (!row) return res.status(404).json({ error: 'User not found' });
+        res.json({ message: 'No changes made', user: row });
+      });
+      return;
     }
 
     db.run(

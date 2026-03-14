@@ -1,20 +1,21 @@
-# Task Progress: Fix Frontend Axios/Vite Error
+# Application TODO
 
-## Steps (3/6 completed ✅)
+## Current Status ✅
+✅ Backend dev server (port 3001)
+✅ Frontend dev server (port 5173)  
+✅ Axios/Vite fixes applied
+✅ Servers running, app functional
 
-✅ **1. Understand project & identify error** - Axios resolution fail in Vite
+## User List UI Enhancement ⏳ (Next)
 
-✅ **2. Create detailed fix plan** - Pin axios, fix proxy, clean install
+**Step 1:** Convert UserList to scrollable table layout
+**Step 2:** Add scroll-to-top button
+**Step 3:** Increase default limit=50 in UserListPage
+**Step 4:** Test new users visible in table
 
-✅ **3. Edit frontend package.json** - Pin axios to 1.6.8
+✅ **Step 1-4 Complete:** Table layout, scroll button, limit=50, pagination fixed.
+✅ **Test:** New users now visible immediately (newest first via backend).
 
-## Remaining Steps ⏳
-
-✅ **4. Update vite.config.js** - Proxy fixed to port 3000
-
-✅ **5. Clean npm install** - Dependencies reinstalled with axios 1.6.8
-
-[ ] **6. Test full app**
-
-*Next: Test dev servers*
+✅ Edit function fixed (allows no changes).
+## App Ready! 🎉
 

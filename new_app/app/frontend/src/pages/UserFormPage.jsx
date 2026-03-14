@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import UserForm from '../components/UserForm.jsx'
 
@@ -12,6 +12,7 @@ function UserFormPage() {
   const isEdit = !!id
   const [error, setError] = useState('')
 
+const queryClient = useQueryClient()
   const { data: user, error: fetchError } = useQuery({
     queryKey: ['user', id],
     queryFn: () => axios.get(`${API_BASE}/users/${id}`).then(res => res.data),
@@ -20,13 +21,19 @@ function UserFormPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => axios.post(`${API_BASE}/users`, data),
-    onSuccess: () => navigate('/', { replace: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      navigate('/', { replace: true })
+    },
     onError: (err) => setError(err.response?.data?.error || err.message || 'Failed to create'),
   })
 
   const updateMutation = useMutation({
     mutationFn: (data) => axios.put(`${API_BASE}/users/${id}`, data),
-    onSuccess: () => navigate('/', { replace: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      navigate('/', { replace: true })
+    },
     onError: (err) => setError(err.response?.data?.error || err.message || 'Failed to update'),
   })
 
