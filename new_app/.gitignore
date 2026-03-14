@@ -2,10 +2,6 @@
 node_modules/
 npm-debug.log*
 
-# Production
-data/
-*.db
-
 # Logs
 *.log
 npm-debug.log*
