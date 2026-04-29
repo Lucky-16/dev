@@ -2,7 +2,8 @@
 FROM node:20-alpine as frontend-build
 WORKDIR /frontend
 COPY app/frontend/package*.json ./
-RUN npm ci --only=production && npm run build
+COPY app/frontend/ ./
+RUN npm ci && npm run build -- --mode production
 
 FROM node:20-alpine
 RUN apk add --no-cache nginx sqlite
